@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Todo App</h1>
+        
+        <!-- Add new todo form -->
+        <div class="add-todo">
+            <form method="post" action="/todos/create">
+                <input type="text" name="title" placeholder="What needs to be done?" required>
+                <input type="text" name="description" placeholder="Description (optional)">
+                <button type="submit">Add Todo</button>
+            </form>
+        </div>
+        
+        <!-- Todo list -->
+        <div class="todo-list">
+            {% if todos %}
+                {% for todo in todos %}
+                    <div class="todo-item {% if todo.completed %}completed{% endif %}">
+                        <div class="todo-content">
+                            <h3>{{ todo.title }}</h3>
+                            {% if todo.description %}
+                                <p>{{ todo.description }}</p>
+                            {% endif %}
+                            <small>Created: {{ todo.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <div class="todo-actions">
+                            <form method="post" action="/todos/{{ todo.id }}/toggle" style="display:inline;">
+                                <button type="submit" class="toggle-btn">
+                                    {% if todo.completed %}Undo{% else %}Complete{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="/todos/{{ todo.id }}/delete" style="display:inline;">
+                                <button type="submit" class="delete-btn">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No todos yet! Add one above to get started.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- API documentation link -->
+        <div class="api-link">
+            <a href="/docs" target="_blank">View API Documentation</a>
+        </div>
+    </div>
+</body>
+</html>

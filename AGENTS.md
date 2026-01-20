@@ -10,7 +10,8 @@ calc.py/
 ├── calc/
 │   ├── __init__.py         # Package initialization
 │   ├── main.py             # Terminal calculator application
-│   └── gui.py              # GUI calculator application
+│   ├── gui.py              # GUI calculator application
+│   └── converter.py        # Unit conversion utilities
 └── AGENTS.md               # This file
 ```
 
@@ -60,8 +61,10 @@ calc.py/
 - **Basic Operations**: Addition (+), Subtraction (-), Multiplication (*), Division (/)
 - **Parentheses**: Support for grouping expressions
 - **Decimal Numbers**: Floating-point arithmetic
+- **Unit Conversions**: Convert between units using "value unit to unit" format
 - **Commands**: 
   - `help` - Show help information
+  - `units` - Show supported units for conversion
   - `quit` or `exit` - Exit the calculator
 
 #### GUI Calculator
@@ -72,6 +75,7 @@ calc.py/
   - Backspace (⌫)
   - Negate (±)
   - Percent (%)
+- **Unit Conversions**: Tabbed interface for converting length, weight, and temperature
 - **Keyboard Support**: Use keyboard for numbers and operators
 - **Visual Interface**: Button-based calculator with display
 
@@ -92,6 +96,12 @@ calc> 10 / 2
 
 calc> 3.14 * 2
 = 6.28
+
+calc> 100 ft to m
+= 30.48 m
+
+calc> 5 lb to kg
+= 2.27 kg
 ```
 
 ## Development
@@ -116,7 +126,8 @@ poetry run flake8 calc/
 
 - **Calculator Class**: Core evaluation logic with input validation
 - **Main Function**: Interactive terminal interface
-- **GUI Class**: Tkinter-based graphical interface
+- **GUI Class**: Tkinter-based graphical interface with tabbed layout
+- **UnitConverter Class**: Handles unit conversions for length, weight, and temperature
 - **Error Handling**: Graceful handling of invalid expressions and user interruptions
 
 ## Dependencies

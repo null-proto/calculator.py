@@ -1,8 +1,9 @@
 """GUI calculator application using tkinter."""
 
 import tkinter as tk
-from tkinter import font
+from tkinter import font, ttk
 from typing import Optional
+from .converter import UnitConverter
 
 
 class CalculatorGUI:
@@ -17,23 +18,44 @@ class CalculatorGUI:
         self.current_input = ""
         self.result_var = tk.StringVar()
         self.result_var.set("0")
+        self.conversion_mode = False
         
         # Create GUI components
-        self._create_display()
+        self._create_conversion_tab()
         self._create_buttons()
         
         # Bind keyboard events
         self._bind_keyboard()
     
-    def _create_display(self):
-        """Create the display area."""
-        display_frame = tk.Frame(self.window, bg="black", padx=10, pady=10)
-        display_frame.grid(row=0, column=0, columnspan=4, sticky="nsew")
+    def _create_conversion_tab(self):
+        """Create unit conversion interface."""
+        # Create notebook for tabs
+        self.notebook = ttk.Notebook(self.window)
+        self.notebook.grid(row=0, column=0, columnspan=4, sticky="nsew", padx=5, pady=5)
         
+        # Calculator tab
+        calc_frame = tk.Frame(self.notebook)
+        self.notebook.add(calc_frame, text="Calculator")
+        
+        # Move existing display and buttons to calc frame
+        self.display_frame = tk.Frame(calc_frame, bg="black", padx=10, pady=10)
+        self.display_frame.grid(row=0, column=0, columnspan=4, sticky="nsew")
+        
+        # Conversion tab
+        conv_frame = tk.Frame(self.notebook)
+        self.notebook.add(conv_frame, text="Convert")
+        
+        self._create_conversion_interface(conv_frame)
+        
+        # Update display creation
+        self._update_display_for_tab()
+    
+    def _update_display_for_tab(self):
+        """Update display to work with tab system."""
         # Result label
         result_font = font.Font(family="Arial", size=24, weight="bold")
         result_label = tk.Label(
-            display_frame,
+            self.display_frame,
             textvariable=self.result_var,
             font=result_font,
             bg="black",
@@ -41,6 +63,84 @@ class CalculatorGUI:
             anchor="e"
         )
         result_label.pack(fill="both", expand=True)
+    
+    def _create_conversion_interface(self, parent):
+        """Create unit conversion interface."""
+        # Value input
+        tk.Label(parent, text="Value:", font=("Arial", 12)).grid(row=0, column=0, padx=5, pady=5)
+        self.conv_value = tk.Entry(parent, font=("Arial", 12), width=15)
+        self.conv_value.grid(row=0, column=1, padx=5, pady=5)
+        
+        # From unit
+        tk.Label(parent, text="From:", font=("Arial", 12)).grid(row=1, column=0, padx=5, pady=5)
+        self.conv_from = ttk.Combobox(parent, font=("Arial", 12), width=13, state="readonly")
+        self.conv_from.grid(row=1, column=1, padx=5, pady=5)
+        
+        # To unit
+        tk.Label(parent, text="To:", font=("Arial", 12)).grid(row=2, column=0, padx=5, pady=5)
+        self.conv_to = ttk.Combobox(parent, font=("Arial", 12), width=13, state="readonly")
+        self.conv_to.grid(row=2, column=1, padx=5, pady=5)
+        
+        # Category selection
+        tk.Label(parent, text="Category:", font=("Arial", 12)).grid(row=3, column=0, padx=5, pady=5)
+        self.conv_category = ttk.Combobox(parent, font=("Arial", 12), width=13, state="readonly")
+        self.conv_category['values'] = ['length', 'weight', 'temperature']
+        self.conv_category.set('length')
+        self.conv_category.grid(row=3, column=1, padx=5, pady=5)
+        self.conv_category.bind('<<ComboboxSelected>>', self._update_unit_options)
+        
+        # Convert button
+        convert_btn = tk.Button(parent, text="Convert", font=("Arial", 12), 
+                               command=self._perform_conversion, bg="#ff9500", fg="white")
+        convert_btn.grid(row=4, column=0, columnspan=2, padx=5, pady=10)
+        
+        # Result display
+        self.conv_result = tk.StringVar()
+        self.conv_result.set("Result: ")
+        result_label = tk.Label(parent, textvariable=self.conv_result, 
+                               font=("Arial", 14, "bold"), bg="white")
+        result_label.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
+        
+        # Initialize unit options
+        self._update_unit_options()
+    
+    def _update_unit_options(self, event=None):
+        """Update unit options based on selected category."""
+        category = self.conv_category.get()
+        units = UnitConverter.get_supported_units()
+        
+        if category in units:
+            unit_list = units[category]
+            self.conv_from['values'] = unit_list
+            self.conv_to['values'] = unit_list
+            if unit_list:
+                self.conv_from.set(unit_list[0])
+                self.conv_to.set(unit_list[1] if len(unit_list) > 1 else unit_list[0])
+    
+    def _perform_conversion(self):
+        """Perform unit conversion."""
+        try:
+            value = float(self.conv_value.get())
+            from_unit = self.conv_from.get()
+            to_unit = self.conv_to.get()
+            
+            result = UnitConverter.convert(value, from_unit, to_unit)
+            
+            # Format result
+            if isinstance(result, float) and result.is_integer():
+                self.conv_result.set(f"Result: {int(result)} {to_unit}")
+            else:
+                self.conv_result.set(f"Result: {result:.4f} {to_unit}")
+                
+        except ValueError as e:
+            self.conv_result.set(f"Error: {e}")
+        except Exception as e:
+            self.conv_result.set(f"Error: {e}")
+    
+    def _create_display(self):
+        """Create the display area."""
+        # Display is now created in _create_conversion_tab
+        pass
     
     def _create_buttons(self):
         """Create calculator buttons."""
@@ -80,12 +180,12 @@ class CalculatorGUI:
             
             # Special width for 0 button
             if text == "0":
-                btn.grid(row=row, column=col, columnspan=2, sticky="nsew", padx=2, pady=2)
+                btn.grid(row=row+1, column=col, columnspan=2, sticky="nsew", padx=2, pady=2)
             else:
-                btn.grid(row=row, column=col, sticky="nsew", padx=2, pady=2)
+                btn.grid(row=row+1, column=col, sticky="nsew", padx=2, pady=2)
             
             # Configure grid weights
-            self.window.grid_rowconfigure(row, weight=1)
+            self.window.grid_rowconfigure(row+1, weight=1)
             self.window.grid_columnconfigure(col, weight=1)
     
     def _bind_keyboard(self):

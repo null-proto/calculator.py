@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "calc"
+version = "0.1.0"
+description = "Terminal and GUI calculator applications"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+calc = "calc.main:main"
+gui = "calc.gui:main"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
